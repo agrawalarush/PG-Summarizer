@@ -5,13 +5,13 @@ HTML-based fetcher that follows the actual PostgreSQL archive structure:
 - We visit each thread and download all messages
 """
 import re
-import requests
+import requests  # pyright: ignore[reportMissingModuleSource]
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Set
-from urllib.parse import urljoin, urlparse
-from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from bs4 import BeautifulSoup  # pyright: ignore[reportMissingModuleSource]
 from email.utils import parsedate_to_datetime, parseaddr
-from dateutil import parser as date_parser
+from dateutil import parser as date_parser  # pyright: ignore[reportMissingModuleSource]
 import time
 
 import config

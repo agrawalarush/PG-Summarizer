@@ -3,10 +3,10 @@ Module to detect and maintain list of PostgreSQL committers.
 Fetches committer information from PostgreSQL project sources.
 """
 import os
-import requests
+import requests  # pyright: ignore[reportMissingModuleSource]
 import re
 from typing import Set
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  # pyright: ignore[reportMissingModuleSource]
 
 import config
 
