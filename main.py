@@ -28,7 +28,7 @@ def main():
     print("1. Initializing components...")
     committer_detector = CommitterDetector()
     thread_analyzer = ThreadAnalyzer(committer_detector.get_committers())
-    thread_selector = ThreadSelector(top_count=config.TOP_THREADS_COUNT)
+    thread_selector = ThreadSelector(top_count=config.NUMBER_OF_TOP_THREADS_TO_SUMMARIZE)
     thread_summarizer = ThreadSummarizer()
     blog_generator = BlogGenerator()
     
@@ -75,7 +75,7 @@ def main():
     print()
     
     # Select top threads
-    print(f"4. Selecting top {config.TOP_THREADS_COUNT} threads...")
+    print(f"4. Selecting top {config.NUMBER_OF_TOP_THREADS_TO_SUMMARIZE} threads...")
     try:
         top_threads = thread_selector.select_top_threads(analyzed_threads)
         print(f"   - Selected {len(top_threads)} top threads")
