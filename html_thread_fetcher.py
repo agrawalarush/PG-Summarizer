@@ -6,7 +6,7 @@ HTML-based fetcher that follows the actual PostgreSQL archive structure:
 """
 import re
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Set
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
@@ -51,7 +51,7 @@ class HTMLThreadFetcher:
         
         # Fetch threads from each month
         for year, month, day in months_to_check:
-            month_messages = self._fetch_month_threads(year, month, day+1, start_date, end_date)
+            month_messages = self._fetch_month_threads(year, month, day if datetime.now(timezone.utc).day == day else day+1, start_date, end_date)
             #Currently adds an extra day to the thread links because it is not using centeral time and warents extra day to get the correct thread.
             messages.extend(month_messages)
             print(f"   Found {len(month_messages)} messages from {year}-{month:02d}")
