@@ -4,7 +4,8 @@ Module to generate blog posts from thread summaries.
 import os
 from datetime import datetime
 from typing import List, Dict
-from jinja2 import Template  # pyright: ignore[reportMissingImports]
+from jinja2 import Template
+
 import config
 
 

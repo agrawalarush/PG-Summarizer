@@ -2,6 +2,7 @@
 Module to select top threads based on activity and committer involvement.
 """
 from typing import List, Dict
+import config
 
 
 class ThreadSelector:

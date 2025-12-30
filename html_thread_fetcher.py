@@ -5,13 +5,13 @@ HTML-based fetcher that follows the actual PostgreSQL archive structure:
 - We visit each thread and download all messages
 """
 import re
-import requests  # pyright: ignore[reportMissingModuleSource]
-from datetime import datetime, timedelta, timezone
+import requests
+from datetime import datetime, timedelta
 from typing import List, Dict, Set
-from urllib.parse import urljoin
-from bs4 import BeautifulSoup  # pyright: ignore[reportMissingModuleSource]
+from urllib.parse import urljoin, urlparse
+from bs4 import BeautifulSoup
 from email.utils import parsedate_to_datetime, parseaddr
-from dateutil import parser as date_parser  # pyright: ignore[reportMissingModuleSource]
+from dateutil import parser as date_parser
 import time
 
 import config
@@ -22,7 +22,6 @@ class HTMLThreadFetcher:
     
     def __init__(self):
         self.archive_base = "https://www.postgresql.org/list/pgsql-hackers/"
-        self.current_day_archive_base = "https://www.postgresql.org/list/pgsql-hackers/since/"
         self.visited_threads: Set[str] = set()
         self.request_delay = 0.5  # Delay between requests to be respectful
     
@@ -43,31 +42,29 @@ class HTMLThreadFetcher:
         
         # Determine which months to check
         months_to_check = set()
-        months_to_check.add((end_date.year, end_date.month, end_date.day))
+        months_to_check.add((end_date.year, end_date.month))
         if start_date.month != end_date.month or start_date.year != end_date.year:
             months_to_check.add((start_date.year, start_date.month))
         
-        print(f"   Checking months: {', '.join(f'{y}-{m:02d}-{d:02d}' for y, m, d in months_to_check)}")
+        print(f"   Checking months: {', '.join(f'{y}-{m:02d}' for y, m in months_to_check)}")
         
         # Fetch threads from each month
-        for year, month, day in months_to_check:
-            month_messages = self._fetch_month_threads(year, month, day if datetime.now(timezone.utc).day == day else day+1, start_date, end_date)
-            #Currently adds an extra day to the thread links because it is not using centeral time and warents extra day to get the correct thread.
+        for year, month in months_to_check:
+            month_messages = self._fetch_month_threads(year, month, start_date, end_date)
             messages.extend(month_messages)
             print(f"   Found {len(month_messages)} messages from {year}-{month:02d}")
         
         return messages
     
-    def _fetch_month_threads(self, year: int, month: int, day: int,
+    def _fetch_month_threads(self, year: int, month: int, 
                             start_date: datetime, end_date: datetime) -> List[Dict]:
-        #Added day argument to make summeries daily instead of monthly.
         """Fetch all threads from a monthly archive page."""
         messages = []
         
         # Construct URL for monthly archive page
-        # Format: https://www.postgresql.org/list/pgsql-hackers/YYYYMM`/
-        date_str = f"{year}{month:02d}{day:02d}"
-        archive_url = f"{self.current_day_archive_base}{date_str}0000/"
+        # Format: https://www.postgresql.org/list/pgsql-hackers/YYYY-MM/
+        month_str = f"{year}-{month:02d}"
+        archive_url = f"{self.archive_base}{month_str}/"
         
         try:
             print(f"      Fetching monthly page: {archive_url}")
@@ -82,12 +79,9 @@ class HTMLThreadFetcher:
             
             # Limit to first N threads for performance
             max_threads = config.MAX_THREADS_PER_MONTH
-            if not max_threads == 'MAX':
-                if len(thread_links) > max_threads:
-                    print(f"      Limiting to first {max_threads} threads (out of {len(thread_links)} total)")
-                    thread_links = thread_links[:max_threads]
-            else:
-                thread_links = thread_links
+            if len(thread_links) > max_threads:
+                print(f"      Limiting to first {max_threads} threads (out of {len(thread_links)} total)")
+                thread_links = thread_links[:max_threads]
             
             # Visit each thread and download messages
             for i, thread_url in enumerate(thread_links, 1):
@@ -144,7 +138,7 @@ class HTMLThreadFetcher:
             
             # Look for /message-id/ links (these are thread starter messages)
             # Pattern: /message-id/{message-id} or /message-id/{message-id}#...
-            else:
+            if '/message-id/' in href:
                 # This is a thread starter link - convert to flat view
                 # Original: /message-id/bgixmidc73doecg7wskq3k76g3nqnglqub7irbrwp4ppjsx43j%40fwre2x775mcl
                 # Flat: /message-id/flat/bgixmidc73doecg7wskq3k76g3nqnglqub7irbrwp4ppjsx43j%40fwre2x775mcl
@@ -227,7 +221,7 @@ class HTMLThreadFetcher:
                         sample_text = sample.get_text()[:300]
                     else:
                         sample_text = str(sample)[:300]
-                    print(f"         Sample section (first 300 chars): {sample_text}")
+                     #print(f"         Sample section (first 300 chars): {sample_text}")
                     # Also show what headers we're looking for
                     if isinstance(sample, str):
                         has_from = 'From:' in sample or 'from:' in sample
