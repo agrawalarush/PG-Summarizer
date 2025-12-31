@@ -1,43 +1,96 @@
 """
 Configuration settings for the pgsql-hackers blog generator.
 """
-from ast import Num
+
 import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-# Mailing list archive URLs
-PG_HACKERS_ARCHIVE_BASE = "https://www.postgresql.org/message-id/"
-PG_HACKERS_MBOX_BASE = "https://www.postgresql.org/list/pgsql-hackers/"
+# -------------------------------------------------------------------
+# Paths
+# -------------------------------------------------------------------
 
-# Output directory for generated blogs
-BLOG_OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "blogs")
+BASE_DIR = os.path.dirname(__file__)
 
-# PostgreSQL committers list (will be fetched/updated)
-COMMITTERS_FILE = os.path.join(os.path.dirname(__file__), "committers.txt")
+BLOG_OUTPUT_DIR = os.path.join(BASE_DIR, "blogs")
+COMMITTERS_FILE = os.path.join(BASE_DIR, "committers.txt")
 
-# Number of top threads to select
-TOP_THREADS_COUNT = 'MAX'
-#Max Allows all threads of that day to be summarized.
-#Else specify the number of threads to summarize.
+# -------------------------------------------------------------------
+# PostgreSQL mailing list archives
+# -------------------------------------------------------------------
 
-NUMBER_OF_TOP_THREADS_TO_SUMMARIZE = 5
-#Number of threads to summarize.
+PG_HACKERS_ARCHIVE_BASE = "https://www.postgresql.org/list/pgsql-hackers/"
 
-# Date range for weekly analysis (days back from today)
+# -------------------------------------------------------------------
+# Thread selection & limits
+# -------------------------------------------------------------------
+
+# Number of top threads to summarize per run
+NUM_SUMMARY_THREADS = 3
+
+# Days back from today for weekly analysis
 WEEKLY_DAYS_BACK = 7
 
-# Maximum number of threads to fetch per month (for performance)
-MAX_THREADS_PER_MONTH = TOP_THREADS_COUNT
-#this is the same thing twice
+# Max threads fetched per month (None = no limit)
+MAX_THREADS = None
 
-# Blog post template settings
+# -------------------------------------------------------------------
+# Blog formatting
+# -------------------------------------------------------------------
+
 BLOG_TEMPLATE = "blog_template.md"
 BLOG_DATE_FORMAT = "%Y-%m-%d"
 
+# -------------------------------------------------------------------
 # Activity scoring weights
+# -------------------------------------------------------------------
+
 WEIGHT_MESSAGE_COUNT = 1.0
 WEIGHT_COMMITTER_COUNT = 2.0
 WEIGHT_UNIQUE_PARTICIPANTS = 0.5
 
+# -------------------------------------------------------------------
+# OpenAI configuration
+# -------------------------------------------------------------------
+# IMPORTANT:
+# Set your API key as an environment variable:
+# export OPENAI_API_KEY="sk-..."
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+# -------------------------------------------------------------------
+# PostgreSQL committers
+# -------------------------------------------------------------------
+
+COMMITTERS = [
+    "Bruce Momjian",
+    "Tom Lane",
+    "Tatsuo Ishii",
+    "Peter Eisentraut",
+    "Joe Conway",
+    "Álvaro Herrera",
+    "Andrew Dunstan",
+    "Magnus Hagander",
+    "Heikki Linnakangas",
+    "Robert Haas",
+    "Jeff Davis",
+    "Fujii Masao",
+    "Noah Misch",
+    "Andres Freund",
+    "Dean Rasheed",
+    "Alexander Korotkov",
+    "Amit Kapila",
+    "Tomas Vondra",
+    "Michael Paquier",
+    "Thomas Munro",
+    "Peter Geoghegan",
+    "Etsuro Fujita",
+    "David Rowley",
+    "Daniel Gustafsson",
+    "John Naylor",
+    "Nathan Bossart",
+    "Amit Langote",
+    "Masahiko Sawada",
+    "Melanie Plageman",
+    "Richard Guo",
+    "Jacob Champion",
+]
